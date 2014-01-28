@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+    xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p" 
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/context 
+    http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+ 
+ 	<!-- 加载注解处理MAP -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+	<!-- 加载注解处理适配器 -->
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+   	<!-- 加载视图解析器 -->
+   	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    
+	<!-- 扫描注解组件 -->
+ 	<context:annotation-config/>
+ 	<!--
+    <context:component-scan base-package="com.wole.svnadmin.util" /> 
+    <context:component-scan base-package="com.wole.svnadmin.service" />   
+    <context:component-scan base-package="com.wole.svnadmin.repository" /> 
+    -->
+    <context:component-scan base-package="com.scm.controller" />        
+</beans>

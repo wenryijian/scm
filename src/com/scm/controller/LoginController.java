@@ -21,7 +21,7 @@ public class LoginController {
 		String webRoot = "http://" + req.getHeader("host") + req.getContextPath(); 
 		req.setAttribute("ROOT", webRoot);
 
-		// test
+		// test test
 		return "index";
 	}
 	 

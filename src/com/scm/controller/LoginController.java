@@ -18,7 +18,7 @@ public class LoginController {
 	
 	@RequestMapping(value = "/index")
 	public String index(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String webRoot = "https://" + req.getHeader("host") + req.getContextPath(); 
+		String webRoot = "http://" + req.getHeader("host") + req.getContextPath(); 
 		req.setAttribute("ROOT", webRoot);
 
 		return "index";

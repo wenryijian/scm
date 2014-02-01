@@ -6,7 +6,9 @@
 <!-- "Quirks Mode". Replacing this declaration     -->
 <!-- with a "Standards Mode" doctype is supported, -->
 <!-- but may lead to some differences in layout.   -->
+<%
 
+%>
 <html>
 <head>
 	<title>学生成绩管理小工具</title>
@@ -26,9 +28,13 @@
 		#id_left_menu .sub_list a li.over{font-weight:bold;}
 
 		/*table的表格颜色*/
-		table.view {border:1px solid #A8CFEB;border-collapse: collapse;margin-bottom:5px;}
-        .view th {padding-left:10px;padding-right:5px;padding-top:5px;padding-bottom:5px;height:23px;width: 150px;border: 1px solid silver;background-color:#F1F6FF;}
-        .view td {padding-left:10px;padding-right:5px;padding-top:5px;padding-bottom:5px;height:23px;width: 150px;border: 1px solid silver;background-color:#FAFCFF;}
+		/*.fitem table {border:0px solid #A8CFEB;border-collapse: collapse;margin-bottom:5px;}
+        .fitem th {padding-left:10px;padding-right:5px;padding-top:5px;padding-bottom:5px;height:23px;width:10px;border:1px solid silver;background-color:#F1F6FF;}
+        .fitem td {padding-left:10px;padding-right:5px;padding-top:5px;padding-bottom:5px;height:23px;width:150px;border:1px solid silver;background-color:#FAFCFF;}*/
+
+		.fitem div {padding:5px;}
+        .fitem label{width:25%;padding-right:15px;font-weight:bold;display:inline-block;text-align:right;vertical-align:middle; }
+		.fitem input,textarea{width:60%;vertical-align:middle;}
 	</style>
 </head>
 
@@ -64,7 +70,7 @@
 		<div id="id_tabs" class="easyui-tabs" fit="true" border="false" >
 			<!-- 第一个tab -->
 			<div title="成绩管理">
-				<jsp:include page="student_score.jsp" flush="true"></jsp:include>
+				<%@ include file="student_score.jsp" %>
 			</div>
 			<!-- 其他tab -->
 		</div>

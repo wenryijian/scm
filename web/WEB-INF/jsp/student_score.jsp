@@ -7,9 +7,9 @@
 		<form id="query_form" method="post">
 			<labe>年度:</labe>
 			<select name="ss_year" class="easyui-combobox" style="width:110px">
-				<option value="">所有</option>
+				<option value="">所有年度</option>
 				<c:forEach var="i" begin="0" end="10" step="1">
-					<option value="${CURR_YEAR-i-1}-${CURR_YEAR-i}年">${CURR_YEAR-i-1}-${CURR_YEAR-i}年</option>
+					<option value="${CURR_YEAR-i-1}-${CURR_YEAR-i}年">${CURR_YEAR-i-1}-${CURR_YEAR-i}年度</option>
 				</c:forEach>
 			</select>
 
@@ -17,13 +17,13 @@
 			<select name="ss_grade" class="easyui-combobox" style="width:75px">
 				<option value="">所有年级</option>
 				<c:forEach var="i" begin="1" end="9" step="1">
-					<option>${10-i}年</option>
+					<option>${10-i}年级</option>
 				</c:forEach>
 			</select>
 
 			<label>&nbsp;班级:</label>
 			<select name="ss_class" class="easyui-combobox" style="width:75px">
-				<option value="">所有</option>
+				<option value="">所有班级</option>
 				<c:forEach var="i" begin="1" end="10" step="1">
 					<option>${i}班</option>
 				</c:forEach>
@@ -48,18 +48,18 @@
 	</fieldset>
 
     <table id="id_tbl_stu_score" class="easyui-datagrid" style="width:auto"
-    	fitColumns="true" rownumbers="true" 
+    	fitColumns="true" rownumbers="true" nowrap="false"
     	data-options="singleSelect:true" 
     	pageSize="20" pagination="true" url="${ROOT}/getExamRecordPage.htm">
     	<thead>
     		<tr>
     			<th field="id", data-options="hidden:true"></th>
-    			<th field="name", align="center" width="100px" >考试名称</th>
-    			<th field="year" align="center" width="100px">年度</th>
-    			<th field="grade" align="center" width="100px" data-options="formatter:function(value,row,index){if(row.grade=='all'){return '所有年级';}else{return row.grade;}}">年级</th>
-    			<th field="class" align="center" width="100px" data-options="formatter:function(value,row,index){if(row.class=='all'){return '所有班级';}else{return row.grade;}}">班级</th>
-    			<th field="subject" align="center" width="100px" data-options="formatter:function(value,row,index){if(row.subject=='all'){return '所有科目';}else{return row.grade;}}">科目</th>
-    			<th field="timestamp" align="center" width="100px">创建时间</th>
+    			<th field="name", align="center" width="200px" >考试名称</th>
+    			<th field="year" align="center" width="75px">年度</th>
+    			<th field="grade" align="center" width="45px">年级</th>
+    			<th field="class" align="center" width="50px" data-options="formatter:function(value,row,index){if(row.class=='all'){return '所有班级';}else{return row.class;}}">班级</th>
+    			<th field="subject" align="center" width="150px">科目</th>
+    			<th field="timestamp" align="center" width="100px" data-options="formatter:function(value,row,index){return row.timestamp.replace(/\.0/, '');}">创建时间</th>
     			<th field="operation" align="center" width="200px" formatter="score_operation_formatter">操作</th>
     		</tr>
     	</thead>
@@ -78,28 +78,28 @@
 		<form id="id_form_new_exam" style="padding-top:25px" class="fitem" method="post">
 			<div>
 				<label>考试名称:</label>
-				<input name="exam_name" value=" " class="easyui-validatebox" required="true" missingMessage="填写本次考试的名称，或者描述信息"/>
+				<input name="exam_name" value=" " class="easyui-validatebox" required="true" missingMessage="填写本次考试的名称，或者描述信息" onclick="javascript:$('#id_form_new_exam :input[name=exam_name]').val('');" />
 			</div>
 			<div>
 				<label>年度:</label>
-				<select name="exam_year" class="easyui-combobox" style="width:120px">
+				<select name="exam_year" class="easyui-combobox" style="width:120px" data-options="editable:false">
 					<c:forEach var="i" begin="0" end="10" step="1">
-						<option value="${CURR_YEAR-i-1}-${CURR_YEAR-i}年">${CURR_YEAR-i-1}-${CURR_YEAR-i}年</option>
+						<option value="${CURR_YEAR-i-1}-${CURR_YEAR-i}年">${CURR_YEAR-i-1}-${CURR_YEAR-i}年度</option>
 					</c:forEach>
 				</select>
 			</div>
 			<div>
 				<label>年级:</label>
-				<select name="exam_grade" class="easyui-combobox" style="width:120px">
-					<option value="all">所有年级</option>
+				<select name="exam_grade" class="easyui-combobox" style="width:120px" data-options="editable:false" required="true" missingMessage="选择一个年级">
+					<option value=""></option>
 					<c:forEach var="i" begin="1" end="9" step="1">
-						<option>${10-i}年</option>
+						<option>${10-i}年级</option>
 					</c:forEach>
 				</select>
 			</div>
 			<div>
 				<label>班级:</label>
-				<select name="exam_class" class="easyui-combobox" style="width:120px">
+				<select name="exam_class" class="easyui-combobox" style="width:120px" data-options="editable:false">
 					<option value="all">所有班级</option>
 					<c:forEach var="i" begin="1" end="10" step="1">
 						<option>${i}班</option>
@@ -108,7 +108,15 @@
 			</div>
 			<div>
 				<label>科目:</label>
-				<select name="exam_subject" class="easyui-combobox" style="width:120px">
+				<select name="exam_subject" id="id_exam_subject" class="easyui-combobox" style="width:120px" data-options="multiple:true,editable:false,panelHeight:'auto',
+					onSelect: function(rec){
+						if (rec.value == 'all'){
+							$('#id_exam_subject').combobox('clear');
+							$('#id_exam_subject').combobox('setValue', 'all');
+						}else{
+							$('#id_exam_subject').combobox('unselect', 'all');
+						}
+					}">
 					<option value="all">所有科目</option>
 					<c:forEach var="obj" items="${ALL_SUBJECT}">
 						<option value="${obj.subject}">${obj.subject}</option>
@@ -126,11 +134,19 @@
     	function saveNewExamRecord(){
     		$('#id_form_new_exam').form('submit', {
     			url: '${ROOT}/newExamRecord.htm',
-    			onSubmit: function(){
+    			onSubmit: function(param){
     				var name = $('#id_form_new_exam :input[name=exam_name]').val();
     				if ($.trim(name) == ''){
     					$('#id_form_new_exam :input[name=exam_name]').val('');
     					return $(this).form('validate');
+    				}
+    				if ($('#id_exam_subject').val() == 'all'){
+    					// 获取所有的科目列表，以逗号分割
+    					var all_subject = "";
+    					<c:forEach var="obj" items="${ALL_SUBJECT}">
+    						all_subject += "${obj.subject}" + ',';
+    					</c:forEach>
+    					$('#id_exam_subject').combobox('setValue', all_subject);
     				}
     				// 打开进度条
     				$('#id_dialog_new_exam').dialog('close');
@@ -160,7 +176,17 @@
     	}
 
     	function score_operation_formatter(value,row,index){
-    		return '';
+    		var html = "";
+    		html += "<a href='javascript:download_score_template(\" " + row.id + " \");'>下载模板</a>";
+    		html += "&nbsp;&nbsp;<a href='javascript:upload_score(\" " + row.id + " \");'>上传成绩表</a>";
+    		html += "&nbsp;&nbsp;<a href='javascript:delete_socre_record(\" " + row.id + " \");'>删除</a>";
+    		return html;
     	}
-    </script>
+
+    	function download_score_template(id){
+    		var url = "${ROOT}/downloadScoreTemplate.htm?id=" + id;
+    		window.open(url);
+    	}
+
+   	</script>
 </div>

@@ -41,13 +41,18 @@ public class ScmRepository {
 		return add;
 	}
 	
-	public Pager getExamRecordPage(String examYear, String examGrade,
+	public Pager getExamRecordPage(String id, String examYear, String examGrade,
 			String examClass, String examSubject, String examName,
 			Date startTime, Date endTime, int page, int rows) {
 		List<String> params = new ArrayList<String>();
 		String sql = "select * from t_exam_record where 1=1";
 		String sqlCount = "select count(1) from t_exam_record where 1=1";
 		
+		if (id != null && !"".equalsIgnoreCase(id.trim())){
+			sql += " and id = ?";
+			sqlCount += " and id = ?";
+			params.add(id.trim());
+		}
 		if (examYear != null && !"".equalsIgnoreCase(examYear.trim())){
 			sql += " and year = ?";
 			sqlCount += " and year = ?";

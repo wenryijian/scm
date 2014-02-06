@@ -14,6 +14,7 @@
 	<title>学生成绩管理小工具</title>
 
     <link rel="stylesheet" type="text/css" href="${ROOT}/easyui/themes/bootstrap/easyui.css">
+    <!-- <link rel="stylesheet" type="text/css" href="${ROOT}/easyui/themes/default/easyui.css"> -->
 	<link rel="stylesheet" type="text/css" href="${ROOT}/easyui/themes/icon.css">
 	
 	<style>
@@ -51,13 +52,12 @@
 	</div>
 
 	<!-- 左侧菜单 -->
-	<div data-options="region:'west',split:true" style="width:150px;padding:1px;overflow:hidden;" title="菜单">
+	<div data-options="region:'west',split:true,animate:false" style="width:150px;padding:1px;overflow:hidden;" title="菜单">
 		<div id="id_left_menu" class="easyui-accordion" data-options="fit:true,border:false,animate:false">
 			<div title="主功能设置" style="padding:10px;overflow:auto;" selected="true">
 				<ul class="sub_list">
-					<a href="javascript:void(0);" onclick="selectFtn(this, '${ROOT}/todo_url.htm')"><li>成绩管理</li></a>
-					<a href="javascript:void(0);" onclick="selectFtn(this, '${ROOT}/todo_url.htm')"><li>年级</li></a>
-					<a href="javascript:void(0);" onclick="selectFtn(this, '${ROOT}/todo_url.htm')"><li>班级</li></a>
+					<a href="javascript:void(0);" onclick="openNewTab(this, '成绩管理', null)"><li>成绩管理</li></a>
+					<a href="javascript:void(0);" onclick="openNewTab(this, '学生管理', '${ROOT}/scm/openStuManagerTab.htm')"><li>学生管理</li></a>
 				</ul>
 			</div>
 			<div title="其他设置" style="padding:10px;overflow:auto;">
@@ -66,10 +66,10 @@
 	</div>
 
 	<!-- 中间内容 -->
-	<div data-options="region:'center',split:false">
-		<div id="id_tabs" class="easyui-tabs" fit="true" border="false" >
+	<div data-options="region:'center'" style="width:100%;height:100%;">
+		<div id="id_tabs" class="easyui-tabs" fit="true">
 			<!-- 第一个tab -->
-			<div title="成绩管理">
+			<div title="成绩管理" style="padding:1px">
 				<%@ include file="student_score.jsp" %>
 			</div>
 			<!-- 其他tab -->
@@ -98,6 +98,20 @@
             
     	});
 
+    	function openNewTab(obj, title, url){
+    		$(".sub_list li").removeClass('cur');
+    		$(obj).children("li").first().addClass('cur');
+
+    		if ($("#id_tabs").tabs('exists', title)){
+    			$("#id_tabs").tabs('select', title);
+    		}else{
+    			$("#id_tabs").tabs('add', {
+    				title: title,
+    				href: '${ROOT}/openStuManagerTab.htm',
+    				closable: true,
+    			});
+    		}
+    	}
 	</script>
 </body>
 </html>

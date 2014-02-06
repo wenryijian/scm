@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,13 +18,14 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 
 public class ExcelTool {
 	private static final Log log = LogFactory.getLog(ExcelTool.class);
 
 	public static void exportExcel(HttpServletRequest request,
 			HttpServletResponse response, String fileName,
-			Map<String, String> propsMap, List<Map<String, Object>> dataList)
+			LinkedHashMap<String, String> propsMap, List<LinkedHashMap<String, Object>> dataList)
 			throws UnsupportedEncodingException {
 
 		// tell browser program going to return an application file 
@@ -55,7 +57,16 @@ public class ExcelTool {
 				row = sheet.createRow(i + 1);
 				for (String key : keyList){
 					cell = row.createCell(cellNum++);
-					cell.setCellValue( (String)map.get(key) );
+					Object v = map.get(key);
+					if (v instanceof String)
+						cell.setCellValue((String)v);
+					else if (v instanceof Integer || v instanceof Long || v instanceof Short || v instanceof Float){
+						cell.setCellValue(Double.parseDouble(v.toString()));
+					}else if (v instanceof Double){
+						cell.setCellValue((Double)v);
+					}else{
+						cell.setCellValue(v.toString());
+					}
 				}
 			}
 			

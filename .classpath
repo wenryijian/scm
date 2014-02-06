@@ -27,5 +27,6 @@
 	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-pool.jar"/>
 	<classpathentry kind="lib" path="web/WEB-INF/lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="web/WEB-INF/lib/poi-3.6-20091214.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-io-2.4.jar"/>
 	<classpathentry kind="output" path="web/WEB-INF/classes"/>
 </classpath>

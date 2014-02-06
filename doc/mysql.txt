@@ -1,4 +1,4 @@
-æŸ¥çœ‹DBå¼•æ“ï¼Œç¡®è®¤InnoDBä¸ºé»˜è®¤çš„å¼•æ“ï¼š
+²é¿´DBÒıÇæ£¬È·ÈÏInnoDBÎªÄ¬ÈÏµÄÒıÇæ£º
 mysql> show engines;
 +--------------------+---------+----------------------------------------------------------------+--------------+------+------------+
 | Engine             | Support | Comment                                                        | Transactions | XA   | Savepoints |
@@ -16,29 +16,91 @@ mysql> show engines;
 9 rows in set (0.03 sec)
 
 
-åˆ›å»ºæ•°æ®åº“
+´´½¨Êı¾İ¿â
 create database if not exists scm default character set utf8;
 
-åˆ›å»ºç”¨æˆ·
+´´½¨ÓÃ»§
 insert into mysql.user(Host,User,Password) values('localhost','scm_web',password('1234'));
 
-åˆ·æ–°æƒé™ï¼Œä½¿æ“ä½œç”Ÿæ•ˆ
+Ë¢ĞÂÈ¨ÏŞ£¬Ê¹²Ù×÷ÉúĞ§
 flush privileges;
 
-
-ç»™ç”¨æˆ·æˆæƒ
+¸øÓÃ»§ÊÚÈ¨
 grant select,insert,update,delete,create,drop on scm.* to scm_web@'%' identified by '1234';
 
-åˆ·æ–°æƒé™ï¼Œä½¿æ“ä½œç”Ÿæ•ˆ
+Ë¢ĞÂÈ¨ÏŞ£¬Ê¹²Ù×÷ÉúĞ§
 flush privileges;
 
 
-CREATE TABLE `test_table` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(64) NOT NULL,
-  `score` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-insert into test_table (name, score) values ('å¼ ä¸‰', 95);
-insert into test_table (name, score) values ('æå››', 98);
+CREATE TABLE `t_setting_subject` (
+ `subject` varchar(128) NOT NULL,
+ `seq` int default 0,
+PRIMARY KEY (`subject`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+insert into t_setting_subject(subject) value("»¯Ñ§");
+insert into t_setting_subject(subject) value("ÉúÎï");
+insert into t_setting_subject(subject) value("ÀúÊ·");
+insert into t_setting_subject(subject) value("Ë¼Æ·");
+insert into t_setting_subject(subject) value("Ó¢Óï");
+insert into t_setting_subject(subject) value("ÊıÑ§");
+insert into t_setting_subject(subject) value("ÓïÎÄ");
+
+
+
+CREATE TABLE IF NOT EXISTS `t_exam_record` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `year` varchar(64) NOT NULL,
+  `grade` varchar(64) NOT NULL,
+  `class` varchar(64) NOT NULL DEFAULT 'all',
+  `subject` varchar(64) NOT NULL DEFAULT 'all',
+  `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
+
+
+CREATE TABLE IF NOT EXISTS `t_score_detail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `class` int(2) NOT NULL DEFAULT '0',
+  `seat` int(2) NOT NULL DEFAULT '0',
+  `subject` varchar(128) NOT NULL,
+  `score` double(16,1) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `examid` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `exam_score_index` (`examid`),
+  CONSTRAINT `t_score_detail_ibfk_1` FOREIGN KEY (`examid`) REFERENCES `t_exam_record` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
+
+- ²é¿´³É¼¨£¬ÒÔ¼°¼ÆËã×Ü·Ö
+select class, name, seat
+	,SUM(if(subject = 'ÓïÎÄ', score, 0)) as 'ÓïÎÄ'
+	,SUM(if(subject = 'ÊıÑ§', score, 0)) as 'ÊıÑ§'
+	,SUM(if(subject = 'Ó¢Óï', score, 0)) as 'Ó¢Óï'
+	,SUM(if(subject = 'Ë¼Æ·', score, 0)) as 'Ë¼Æ·'
+	,SUM(if(subject = 'ÀúÊ·', score, 0)) as 'ÀúÊ·'
+	,SUM(if(subject = 'ÉúÎï', score, 0)) as 'ÉúÎï'
+	,SUM(if(subject = 'µØÀí', score, 0)) as 'µØÀí'
+	,sum(score) as all_score
+from t_score_detail where examid = ? group by class, name, seat order by all_score desc
+
+
+- ²é¿´³É¼¨£¬¼ÆËã×Ü·Ö£¬ÒÔ¼°Ìí¼ÓÅÅÃû
+set @rownum = 0, @rank = 0, @pre_val = 0;
+select class,name,seat, ÓïÎÄ, ÊıÑ§, Ó¢Óï, Ë¼Æ·, ÀúÊ·, ÉúÎï, µØÀí, @rownum := @rownum+1 as row, @rank := if (@pre_val != all_score, @rownum, @rank) as rank,  @prev_val := all_score as all_score from (
+select class, name, seat
+	,SUM(if(subject = 'ÓïÎÄ', score, 0)) as 'ÓïÎÄ'
+	,SUM(if(subject = 'ÊıÑ§', score, 0)) as 'ÊıÑ§'
+	,SUM(if(subject = 'Ó¢Óï', score, 0)) as 'Ó¢Óï'
+	,SUM(if(subject = 'Ë¼Æ·', score, 0)) as 'Ë¼Æ·'
+	,SUM(if(subject = 'ÀúÊ·', score, 0)) as 'ÀúÊ·'
+	,SUM(if(subject = 'ÉúÎï', score, 0)) as 'ÉúÎï'
+	,SUM(if(subject = 'µØÀí', score, 0)) as 'µØÀí'
+	,sum(score) as all_score
+from t_score_detail where examid = 11 group by class, name, seat order by all_score desc) as T;

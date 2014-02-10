@@ -104,3 +104,23 @@ select class, name, seat
 	,SUM(if(subject = '地理', score, 0)) as '地理'
 	,sum(score) as all_score
 from t_score_detail where examid = 11 group by class, name, seat order by all_score desc) as T;
+
+
+- 修改学科顺序
+UPDATE `scm`.`t_setting_subject` SET `seq`='1' WHERE `subject`='语文';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='2' WHERE `subject`='数学';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='4' WHERE `subject`='英语';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='8' WHERE `subject`='物理';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='16' WHERE `subject`='化学';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='32' WHERE `subject`='思品';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='64' WHERE `subject`='历史';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='128' WHERE `subject`='生物';
+
+UPDATE `scm`.`t_setting_subject` SET `seq`='256' WHERE `subject`='地理';

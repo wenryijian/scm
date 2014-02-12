@@ -13,15 +13,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
+import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,8 +41,10 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import com.scm.repository.ScmRepository;
+import com.scm.util.CellStyle;
 import com.scm.util.ExcelTool;
 import com.scm.util.Pager;
+import com.scm.util.T;
 
 @Controller
 public class ScoreController {
@@ -426,27 +435,138 @@ public class ScoreController {
 			return;
 		}
 		Map<String, String> record = (Map<String, String>) pager.getResultList().get(0);
-		String examInfo = record.get("name");
+		String examName = record.get("name");
 		String year = record.get("year");
 		String grade = record.get("grade");
 		String examClass = record.get("class");
 
 		String fileName = year + grade;
+		String examInfo = year + grade; 
 		if (!examClass.trim().equalsIgnoreCase("all")) {
 			fileName += examClass;
+			examInfo += examClass;
 		}
-		fileName += examInfo + ".xls";
+		fileName += examName + ".xls";
+		examInfo += examName + "排名表";
 		
 		// 表头
-		LinkedHashMap<String, String> propsMap = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, Object> propsMap = new LinkedHashMap<String, Object>();
 
 		// 数据行
 		List<LinkedHashMap<String, Object>> dataList = new ArrayList<LinkedHashMap<String, Object>>();
 		
 		int r = scmRepository.getExamScoreDetail(examid, propsMap, dataList);
-		if (r > 0){
-			response.setCharacterEncoding("GBK");
-			ExcelTool.exportExcel(request, response, fileName, propsMap, dataList);
+		if (r <= 0)
+			return;
+		
+		HSSFWorkbook book =  new HSSFWorkbook();
+		try{			
+			HSSFSheet sheet = book.createSheet("全级排名");
+			
+			// 字体
+			HSSFFont font = book.createFont();
+			
+			// 样式
+			HSSFCellStyle headerStyle = book.createCellStyle();
+			font.setFontName("宋体");
+			font.setFontHeightInPoints((short)18);
+			headerStyle.setFont(font);
+			headerStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);// 左右居中
+			headerStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);// 上下居中
+			
+			HSSFCellStyle dataStyle = book.createCellStyle();
+			font = book.createFont();
+			font.setFontName("宋体");
+			font.setFontHeightInPoints((short)9);
+			dataStyle.setFont(font);
+			dataStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+			dataStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+
+			// 设置各列宽度，宽度单位跟所用字体、字体大小有关，为字体宽度的1/256
+			HSSFRow row = null;
+			HSSFCell cell = null;
+			int rowNum = 0, cellNum = 0;
+
+			// A4纸， 一页存放64位学生的成绩，排成两列，每列32位学生成绩
+			int headerNum = 1;
+			int row32Cnt = 0;
+			int cacheCellNum = 0;
+			for (int i=0; i < dataList.size(); i++){
+				if (i % 32 == 0){
+					if (row32Cnt % 2 == 0){
+    					// 添加表头
+    					// 1. 大标题，跨所有列
+    					row = sheet.createRow(rowNum);
+    					row.setHeightInPoints((float)36.75);
+    					sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, propsMap.size()*2-1));
+    					cell = row.createCell(0);
+    					cell.setCellStyle(headerStyle);
+    					cell.setCellValue(examInfo + headerNum);
+    					headerNum++;
+    					rowNum++;
+    					
+    					// 2. 各列表头
+    					row = sheet.createRow(rowNum++);
+    					row.setHeightInPoints((float)26.75);
+    					cellNum = 0;
+    					for(int j = 0; j < 2; j++){
+        					for (String key : propsMap.keySet()){
+        						CellStyle cellStyle = (CellStyle)propsMap.get(key);
+        						cell = row.createCell(cellNum);
+        						cell.setCellStyle(dataStyle);
+        						sheet.setColumnWidth(cellNum, (int)cellStyle.getWidth());	// 设置列宽
+        						
+        						cell.setCellValue(cellStyle.getName());						// 设置内容
+        						cellNum++;
+        					}
+    					}
+    					
+    					cacheCellNum = 0;
+					}else{
+						cacheCellNum = propsMap.size();
+						rowNum -= 32;
+						
+					}
+					row32Cnt++;
+				}
+				
+				cellNum = cacheCellNum;
+				if (cellNum == 0){
+					row = sheet.createRow(rowNum++);
+					row.setHeightInPoints((float)21);
+				}else{
+					row = sheet.getRow(rowNum++);
+				}
+				
+				Map<String, Object> data = dataList.get(i);
+				for (String key : propsMap.keySet()){
+					cell = row.createCell(cellNum);
+					cell.setCellStyle(dataStyle);
+					CellStyle cellStyle = (CellStyle)propsMap.get(key);
+					sheet.setColumnWidth(cellNum, (int)cellStyle.getWidth());		// 设置列宽
+					
+					Object v = data.get(key);										// 设置内容
+					if (cellStyle.getCellType() == Cell.CELL_TYPE_STRING){
+						cell.setCellValue(new HSSFRichTextString((String)v));
+					}else{
+						cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+						cell.setCellValue( new Double(v.toString()));
+					}
+					cellNum++;
+				}
+			}
+		}catch (Exception ex){
+			ex.printStackTrace();
 		}
+		
+		response.setCharacterEncoding("GBK");
+		response.setHeader("Content-Disposition", "attachment;filename=" + T.toUTF8(fileName));
+		response.setHeader("Connection", "close");
+		response.setContentType("application/ms-excel,charset=GBK");
+		
+		ServletOutputStream sos = response.getOutputStream();
+		book.write(sos);
+		sos.flush();
+		sos.close();
 	}
 }

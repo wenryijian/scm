@@ -10,12 +10,14 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.usermodel.Cell;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Repository;
 
+import com.scm.util.CellStyle;
 import com.scm.util.Pager;
 
 @Repository
@@ -156,25 +158,24 @@ public class ScmRepository extends AbstractRepository {
 	}
 
 	public int getExamScoreDetail(String examid,
-			LinkedHashMap<String, String> propsMap,
+			LinkedHashMap<String, Object> propsMap,
 			List<LinkedHashMap<String, Object>> dataList) {
 		// 第1行，表头，各列顺序
-		propsMap.put("class", "班级");
-		propsMap.put("name", "姓名");
-		propsMap.put("seat", "座位号");
+		propsMap.put("class", new CellStyle("班级", 3.22, 26.25, Cell.CELL_TYPE_NUMERIC));
+		propsMap.put("name", new CellStyle("姓名", 6, 26.25, Cell.CELL_TYPE_STRING));
+//		propsMap.put("seat", new CellStyle("座位", 6, 26.25));
 		String sql = "select distinct subject as subject from t_score_detail where examid = ?";
 		List<Map<String, Object>> subjects = scmJdbc.queryForList(sql, new Object[] { examid });
 		if (subjects.size() <= 0) {
 			return -1;
 		}
 		for (Map<String, Object> map : subjects) {
-			propsMap.put((String)map.get("subject"), (String)map.get("subject"));
+			propsMap.put((String)map.get("subject"), new CellStyle((String)map.get("subject"), 3.22, 21, Cell.CELL_TYPE_NUMERIC));
 		}
-		propsMap.put("all_score", "总分");
-		propsMap.put("rank", "名次");
+		propsMap.put("all_score", new CellStyle("总分", 3.21, 21, Cell.CELL_TYPE_NUMERIC));
+		propsMap.put("rank", new CellStyle("名次", 3.21, 21, Cell.CELL_TYPE_NUMERIC));
 		
-		
-		sql = "select class, name, seat";
+		sql = "select class, name";
 		for (Map<String, Object> map : subjects) {
 			sql += ", sum( if(subject = '" + map.get("subject")
 					+ "', score, 0)) as '" + map.get("subject") + "'";
@@ -186,7 +187,7 @@ public class ScmRepository extends AbstractRepository {
 			LinkedHashMap<String, Object> dataMap = new LinkedHashMap<String, Object>();
 			dataMap.put("class", map.get("class"));
 			dataMap.put("name", map.get("name"));
-			dataMap.put("seat", map.get("seat"));
+//			dataMap.put("seat", map.get("seat"));
 			for (Map<String, Object> map1 : subjects) {
 				String key = (String)map1.get("subject");
 				dataMap.put(key, map.get(key));
